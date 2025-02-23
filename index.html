@@ -1,0 +1,382 @@
+<html>
+    <head>
+        <title>
+            Tic Tac Toe
+        </title>
+    </head>
+    <body style="height:100vh; width:100vw; display: flex; justify-content: center; align-items: center; flex-direction: column; overflow: hidden;">
+        <div style="text-align: center; font-size: 24px; margin-bottom: 100px;">
+            Welcome to Meryem's Tic Tac Toe
+        </div>
+        <div id="game-container" style="display: flex; justify-content: center; align-items: center; height: 600px; width: 600px; background-color: none;">
+            <canvas id="game-canvas" style="height: 100%; width: 100%;">
+
+            </canvas>
+        </div>
+    </body>
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        // make canvas fill the entire container
+        const gameContainer = document.getElementById('game-container');
+        canvas.width = gameContainer.clientWidth;
+        canvas.height = gameContainer.clientHeight;
+        const ctx = canvas.getContext('2d');
+        canvas.width = 600;
+        canvas.height = 600;
+        // fill background color with blue:
+        ctx.fillStyle = 'green';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+
+        // make line color white:
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 5;
+
+        // draw a line from 200, 0 to 200, 600
+        ctx.beginPath();
+        ctx.moveTo(200, 0);
+        ctx.lineTo(200, 600);
+        ctx.stroke();
+
+        // draw a linw from 400, 0 to 400, 600
+        ctx.beginPath();
+        ctx.moveTo(400, 0);
+        ctx.lineTo(400, 600);
+        ctx.stroke();
+
+        // draw a lıne from 0, 200 to 600, 200
+        ctx.beginPath();
+        ctx.moveTo(0, 200);
+        ctx.lineTo(600, 200);
+        ctx.stroke();
+       
+        // draw a line from 0, 400 to 600, 400
+        ctx.beginPath();
+        ctx.moveTo(0, 400);
+        ctx.lineTo(600, 400);
+        ctx.stroke();
+
+
+        // there will be 2 players, one will be X and the other will be O
+
+        // the game will have turns. X will go first.
+        // so lets create a variable to keep track of the current player
+        let currentPlayer = 'X';
+
+        let topLeftCell = 'Empty';
+        let topCenterCell = 'Empty';
+        let topRightCell = 'Empty';
+        let middleLeftCell = 'Empty';
+        let middleCenterCell = 'Empty';
+        let middleRightCell = 'Empty';
+        let bottomLeftCell = 'Empty';
+        let bottomCenterCell = 'Empty';
+        let bottomRightCell = 'Empty';
+        
+        // create a function to handle the click event
+        function handleClick(event) {
+            const x = event.clientX;
+            const y = event.clientY;
+            // normalize the x and y coordinates to the canvas
+            const normalizedX = x - canvas.offsetLeft;
+            const normalizedY = y - canvas.offsetTop;
+
+            const cell = whichCellUserClicked(normalizedX, normalizedY);
+            // if the clicked cell is already filled, return
+            
+            if(cell === 'top left' && topLeftCell !== 'Empty') {
+                alert('Cell already filled');
+                return;
+            }
+            if(cell === 'top center' && topCenterCell !== 'Empty') {
+                alert('Cell already filled');
+                return;
+            }
+            if(cell === 'top right' && topRightCell !== 'Empty') {
+                alert('Cell already filled');
+                return;
+            }
+            if(cell === 'middle left' && middleLeftCell !== 'Empty') {
+                alert('Cell already filled');
+                return;
+            }
+            if(cell === 'middle center' && middleCenterCell !== 'Empty') {
+                alert('Cell already filled');
+                return;
+            }
+            if(cell === 'middle right' && middleRightCell !== 'Empty') {
+                alert('Cell already filled');
+                return;
+            }
+            if(cell === 'bottom left' && bottomLeftCell !== 'Empty') {
+                alert('Cell already filled');
+                return;
+            }
+            if(cell === 'bottom center' && bottomCenterCell !== 'Empty') {
+                alert('Cell already filled');
+                return;
+            }
+            if(cell === 'bottom right' && bottomRightCell !== 'Empty') {
+                alert('Cell already filled');
+                return;
+            }
+
+            // then based on the player's turn, draw an X or O to the clicked cell.
+            if (currentPlayer === 'X') {
+                drawXtoTheCell(cell);
+                if(cell === 'top left') {
+                    topLeftCell = 'X';
+                }
+                if(cell === 'top center') {
+                    topCenterCell = 'X';
+                }
+                if(cell === 'top right') {
+                    topRightCell = 'X';
+                }
+                if(cell === 'middle left') {
+                    middleLeftCell = 'X';
+                }
+                if(cell === 'middle center') {
+                    middleCenterCell = 'X';
+                }
+                if(cell === 'middle right') {
+                    middleRightCell = 'X';
+                }
+                if(cell === 'bottom left') {
+                    bottomLeftCell = 'X';
+                }
+                if(cell === 'bottom center') {
+                    bottomCenterCell = 'X';
+                }
+                if(cell === 'bottom right') {
+                    bottomRightCell = 'X';
+                }
+                
+                currentPlayer = 'O';
+            } 
+            else if (currentPlayer === 'O') {
+                drawOtoTheCell(cell);
+                if(cell === 'top left') {
+                    topLeftCell = 'O';
+                }
+                if(cell === 'top center') {
+                    topCenterCell = 'O';
+                }
+                if(cell === 'top right') {
+                    topRightCell = 'O';
+                }
+                if(cell === 'middle left') {
+                    middleLeftCell = 'O';
+                }
+                if(cell === 'middle center') {
+                    middleCenterCell = 'O';
+                }
+                if(cell === 'middle right') {
+                    middleRightCell = 'O';
+                }
+                if(cell === 'bottom left') {
+                    bottomLeftCell = 'O';
+                }
+                if(cell === 'bottom center') {
+                    bottomCenterCell = 'O';
+                }
+                if(cell === 'bottom right') {
+                    bottomRightCell = 'O';
+                }
+                currentPlayer = 'X';
+            }
+
+            setTimeout(checkIfGameHasAWinner, 500);
+                
+        }
+
+        function checkIfGameHasAWinner() {
+            // check top row:
+            if(topLeftCell === 'X' && topCenterCell === 'X' && topRightCell === 'X') {
+                alert('X wins');
+                resetGame();
+            }
+            if(topLeftCell === 'O' && topCenterCell === 'O' && topRightCell === 'O') {
+                alert('O wins');
+                resetGame();
+            }
+            // check middle row:
+            if(middleLeftCell === 'X' && middleCenterCell === 'X' && middleRightCell === 'X') {
+                alert('X wins');
+                resetGame();
+            }
+            if(middleLeftCell === 'O' && middleCenterCell === 'O' && middleRightCell === 'O') {
+                alert('O wins');
+                resetGame();
+            }
+            // check bottom row:
+            if(bottomLeftCell === 'X' && bottomCenterCell === 'X' && bottomRightCell === 'X') {
+                alert('X wins');
+                resetGame();
+            }
+            if(bottomLeftCell === 'O' && bottomCenterCell === 'O' && bottomRightCell === 'O') {
+                alert('O wins');
+                resetGame();
+            }
+            // check diagonal:
+            if(topLeftCell === 'X' && middleCenterCell === 'X' && bottomRightCell === 'X') {
+                alert('X wins');
+                resetGame();
+            }
+            if(topLeftCell === 'O' && middleCenterCell === 'O' && bottomRightCell === 'O') {
+                alert('O wins');
+                resetGame();
+            }
+            // check reverse diagonal: 
+            if(topRightCell === 'X' && middleCenterCell === 'X' && bottomLeftCell === 'X') {
+                alert('X wins');
+                resetGame();
+            }
+            if(topRightCell === 'O' && middleCenterCell === 'O' && bottomLeftCell === 'O') {
+                alert('O wins');
+                resetGame();
+            }
+            // check columns:
+            if(topLeftCell === 'X' && middleLeftCell === 'X' && bottomLeftCell === 'X') {
+                alert('X wins');
+                resetGame();
+            }
+            if(topLeftCell === 'O' && middleLeftCell === 'O' && bottomLeftCell === 'O') {
+                alert('O wins');
+                resetGame();
+            }
+            if(topCenterCell === 'X' && middleCenterCell === 'X' && bottomCenterCell === 'X') {
+                alert('X wins');
+                resetGame();
+            }
+            if(topCenterCell === 'O' && middleCenterCell === 'O' && bottomCenterCell === 'O') {
+                alert('O wins');
+                resetGame();
+            }
+            if(topRightCell === 'X' && middleRightCell === 'X' && bottomRightCell === 'X') {
+                alert('X wins');
+                resetGame();
+            }
+            if(topRightCell === 'O' && middleRightCell === 'O' && bottomRightCell === 'O') {
+                alert('O wins');
+                resetGame();
+            }
+            // check if the game is a draw:
+            if(topLeftCell !== 'Empty' && topCenterCell !== 'Empty' && topRightCell !== 'Empty' && middleLeftCell !== 'Empty' && middleCenterCell !== 'Empty' && middleRightCell !== 'Empty' && bottomLeftCell !== 'Empty' && bottomCenterCell !== 'Empty' && bottomRightCell !== 'Empty') {
+                alert('Draw');
+                resetGame();
+            }
+        }
+
+        function resetGame() {
+            window.location.reload();
+        }
+
+        function getCenterOfTheCell(cell) {
+            if (cell === 'top left') {
+                return {x: 100, y: 100};
+            }
+            if (cell === 'top center') {
+                return {x: 300, y: 100};
+            }
+            if (cell === 'top right') {
+                return {x: 500, y: 100};
+            }   
+            if (cell === 'middle left') {
+                return {x: 100, y: 300};
+            }
+            if (cell === 'middle center') {
+                return {x: 300, y: 300};
+            }
+            if (cell === 'middle right') {
+                return {x: 500, y: 300};
+            }
+            if (cell === 'bottom left') {
+                return {x: 100, y: 500};
+            }
+            if (cell === 'bottom center') {
+                return {x: 300, y: 500};
+            }
+            if (cell === 'bottom right') {
+                return {x: 500, y: 500};
+            }
+        }
+
+        
+        function drawXtoTheCell(cell) {
+            const center = getCenterOfTheCell(cell);
+            ctx.beginPath();
+            ctx.moveTo(center.x - 50, center.y - 50);
+            ctx.lineTo(center.x + 50, center.y + 50);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(center.x + 50, center.y - 50);
+            ctx.lineTo(center.x - 50, center.y + 50);
+            ctx.stroke();
+        }
+
+        function drawOtoTheCell(cell) {
+            const center = getCenterOfTheCell(cell);
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, 50, 0, 2 * Math.PI);
+            ctx.stroke();
+        }
+
+
+        function whichCellUserClicked(x, y) {
+            console.log(x, y);
+            // if x is between 0 and 200 and y is between 0 and 200, then draw an X to top left cell.
+            if (x > 0 && x < 200 && y > 0 && y < 200) {
+                return 'top left';
+            }
+            // if x is between 200 and 400 and y is between 0 and 200, then draw an X to top middle cell.
+            if (x > 200 && x < 400 && y > 0 && y < 200) {
+                return 'top center';
+            }
+            // if x is between 400 and 600 and y is between 0 and 200, then draw an X to top right cell.
+            if (x > 400 && x < 600 && y > 0 && y < 200) {
+                return 'top right';
+            }
+
+            // if x is between 0 and 200 and y is between 200 and 400, then draw an X to middle left cell.
+            if (x > 0 && x < 200 && y > 200 && y < 400) {
+                return 'middle left';
+            }
+
+            // if x is between 200 and 400 and y is between 200 and 400, then draw an X to middle middle cell.
+            if (x > 200 && x < 400 && y > 200 && y < 400) {
+                return 'middle center';
+            }
+
+            // if x is between 400 and 600 and y is between 200 and 400, then draw an X to middle right cell.
+            if (x > 400 && x < 600 && y > 200 && y < 400) {
+                return 'middle right';
+            }
+
+            // if x is between 0 and 200 and y is between 400 and 600, then draw an X to bottom left cell.
+            if (x > 0 && x < 200 && y > 400 && y < 600) {
+                return 'bottom left';
+            }
+
+            // if x is between 200 and 400 and y is between 400 and 600, then draw an X to bottom middle cell.
+            if (x > 200 && x < 400 && y > 400 && y < 600) {
+                return 'bottom center';
+            }
+
+            // if x is between 400 and 600 and y is between 400 and 600, then draw an X to bottom right cell.   
+            if (x > 400 && x < 600 && y > 400 && y < 600) {
+                return 'bottom right'; 
+            }
+        }
+
+        // add the event listener to the canvas
+        canvas.addEventListener('click', handleClick);
+
+        // whenever a player clicks on a cell, it will be filled with the player's mark
+        // the game will then switch to the other player
+        // the game will continue until one player wins or the game is a draw
+        // the game will then reset
+        
+        
+    </script>
+</html>
