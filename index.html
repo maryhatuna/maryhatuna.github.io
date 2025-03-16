@@ -1,382 +1,410 @@
 <html>
     <head>
         <title>
-            Tic Tac Toe
+            Four in a Row
         </title>
+        <style>
+            body {
+                height: 100vh;
+                width: 100vw;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                overflow: hidden;
+                margin: 0;
+                font-family: Arial, sans-serif;
+            }
+            .setup-form {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                padding: 20px;
+                background-color: #f5f5f5;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                margin-bottom: 30px;
+            }
+            .form-row {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            .form-row label {
+                width: 160px;
+            }
+            input[type="number"] {
+                width: 60px;
+                padding: 5px;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+                cursor: pointer;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                margin-top: 10px;
+            }
+        </style>
     </head>
-    <body style="height:100vh; width:100vw; display: flex; justify-content: center; align-items: center; flex-direction: column; overflow: hidden;">
-        <div style="text-align: center; font-size: 24px; margin-bottom: 100px;">
-            Welcome to Meryem's Tic Tac Toe
+    <body>
+        <div style="text-align: center; font-size: 24px; margin-bottom: 20px;">
+            Welcome to Meryem's Four in a Row Game
         </div>
-        <div id="game-container" style="display: flex; justify-content: center; align-items: center; height: 600px; width: 600px; background-color: none;">
+        
+        <div id="setup-container" class="setup-form">
+            <h3>Game Setup</h3>
+            <div class="form-row">
+                <label for="rows">Number of Rows:</label>
+                <input type="number" id="rows-input" min="4" max="10" value="6">
+            </div>
+            <div class="form-row">
+                <label for="cols">Number of Columns:</label>
+                <input type="number" id="cols-input" min="4" max="10" value="7">
+            </div>
+            <button id="start-game">Start Game</button>
+        </div>
+        
+        <div id="game-container" style="display: none; justify-content: center; align-items: center; height: 600px; width: 600px; background-color: none;">
             <canvas id="game-canvas" style="height: 100%; width: 100%;">
-
             </canvas>
         </div>
     </body>
     <script>
-        const canvas = document.getElementById('game-canvas');
-        // make canvas fill the entire container
+        // Game setup elements
+        const setupContainer = document.getElementById('setup-container');
+        const startGameButton = document.getElementById('start-game');
+        const rowsInput = document.getElementById('rows-input');
+        const colsInput = document.getElementById('cols-input');
         const gameContainer = document.getElementById('game-container');
-        canvas.width = gameContainer.clientWidth;
-        canvas.height = gameContainer.clientHeight;
-        const ctx = canvas.getContext('2d');
-        canvas.width = 600;
-        canvas.height = 600;
-        // fill background color with blue:
-        ctx.fillStyle = 'green';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-
-        // make line color white:
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 5;
-
-        // draw a line from 200, 0 to 200, 600
-        ctx.beginPath();
-        ctx.moveTo(200, 0);
-        ctx.lineTo(200, 600);
-        ctx.stroke();
-
-        // draw a linw from 400, 0 to 400, 600
-        ctx.beginPath();
-        ctx.moveTo(400, 0);
-        ctx.lineTo(400, 600);
-        ctx.stroke();
-
-        // draw a lıne from 0, 200 to 600, 200
-        ctx.beginPath();
-        ctx.moveTo(0, 200);
-        ctx.lineTo(600, 200);
-        ctx.stroke();
-       
-        // draw a line from 0, 400 to 600, 400
-        ctx.beginPath();
-        ctx.moveTo(0, 400);
-        ctx.lineTo(600, 400);
-        ctx.stroke();
-
-
-        // there will be 2 players, one will be X and the other will be O
-
-        // the game will have turns. X will go first.
-        // so lets create a variable to keep track of the current player
-        let currentPlayer = 'X';
-
-        let topLeftCell = 'Empty';
-        let topCenterCell = 'Empty';
-        let topRightCell = 'Empty';
-        let middleLeftCell = 'Empty';
-        let middleCenterCell = 'Empty';
-        let middleRightCell = 'Empty';
-        let bottomLeftCell = 'Empty';
-        let bottomCenterCell = 'Empty';
-        let bottomRightCell = 'Empty';
+        const canvas = document.getElementById('game-canvas');
         
-        // create a function to handle the click event
-        function handleClick(event) {
+        // Game variables
+        let rows, cols, cellWidth, cellHeight;
+        let ctx, board, currentPlayer, gameOver, winner, totalMoves;
+        let players = ['red', 'blue'];
+        
+        // Start game when button is clicked
+        startGameButton.addEventListener('click', initializeGame);
+        
+        function initializeGame() {
+            // Get dimensions from inputs
+            rows = parseInt(rowsInput.value);
+            cols = parseInt(colsInput.value);
+            
+            // Validate inputs
+            if (rows < 4 || cols < 4 || rows > 10 || cols > 10) {
+                alert("Please choose dimensions between 4 and 10");
+                return;
+            }
+            
+            // Hide setup form and show game
+            setupContainer.style.display = 'none';
+            gameContainer.style.display = 'flex';
+            
+            // Initialize canvas
+            ctx = canvas.getContext('2d');
+            canvas.width = 600;
+            canvas.height = 600;
+            
+            // Calculate cell dimensions
+            cellWidth = canvas.width / cols;
+            cellHeight = canvas.height / rows;
+            
+            // Initialize game state
+            board = Array.from({length: rows}, () => Array(cols).fill(''));
+            currentPlayer = players[0];
+            gameOver = false;
+            winner = null;
+            totalMoves = 0;
+            
+            // Initial draw
+            redrawBoard();
+            
+            // Add click event listener for the game
+            canvas.addEventListener('click', handleCanvasClick);
+        }
+        
+        function handleCanvasClick(event) {
+            // Don't allow moves if game is over
+            if (gameOver) return;
+            
+            // get which cell the user clicked
+            const {row, col} = getCellClicked(event);
+            // put a circle on the cell based on the current player
+            putPiece(row, col, currentPlayer);
+        }
+
+        function getCellClicked(event) {
             const x = event.clientX;
             const y = event.clientY;
-            // normalize the x and y coordinates to the canvas
-            const normalizedX = x - canvas.offsetLeft;
-            const normalizedY = y - canvas.offsetTop;
-
-            const cell = whichCellUserClicked(normalizedX, normalizedY);
-            // if the clicked cell is already filled, return
+            // get relative x and y to the canvas
+            const relativeX = x - canvas.offsetLeft;
+            const relativeY = y - canvas.offsetTop;
+            // based on the relative x and y, get the row and column
+            const row = Math.floor(relativeY / cellHeight);
+            const col = Math.floor(relativeX / cellWidth);
+            return {row, col};
+        }
+        
+        function putPiece(row, col, player) {
+            // Check if column is full
+            if (board[0][col] !== '') return;
             
-            if(cell === 'top left' && topLeftCell !== 'Empty') {
-                alert('Cell already filled');
-                return;
-            }
-            if(cell === 'top center' && topCenterCell !== 'Empty') {
-                alert('Cell already filled');
-                return;
-            }
-            if(cell === 'top right' && topRightCell !== 'Empty') {
-                alert('Cell already filled');
-                return;
-            }
-            if(cell === 'middle left' && middleLeftCell !== 'Empty') {
-                alert('Cell already filled');
-                return;
-            }
-            if(cell === 'middle center' && middleCenterCell !== 'Empty') {
-                alert('Cell already filled');
-                return;
-            }
-            if(cell === 'middle right' && middleRightCell !== 'Empty') {
-                alert('Cell already filled');
-                return;
-            }
-            if(cell === 'bottom left' && bottomLeftCell !== 'Empty') {
-                alert('Cell already filled');
-                return;
-            }
-            if(cell === 'bottom center' && bottomCenterCell !== 'Empty') {
-                alert('Cell already filled');
-                return;
-            }
-            if(cell === 'bottom right' && bottomRightCell !== 'Empty') {
-                alert('Cell already filled');
-                return;
-            }
-
-            // then based on the player's turn, draw an X or O to the clicked cell.
-            if (currentPlayer === 'X') {
-                drawXtoTheCell(cell);
-                if(cell === 'top left') {
-                    topLeftCell = 'X';
+            // find the topmost empty cell with the same column.. 
+            let bottomRow = -1;
+            for (let i = rows - 1; i >= 0; i--) {
+                if (board[i][col] === '') {
+                    bottomRow = i;
+                    break;
                 }
-                if(cell === 'top center') {
-                    topCenterCell = 'X';
-                }
-                if(cell === 'top right') {
-                    topRightCell = 'X';
-                }
-                if(cell === 'middle left') {
-                    middleLeftCell = 'X';
-                }
-                if(cell === 'middle center') {
-                    middleCenterCell = 'X';
-                }
-                if(cell === 'middle right') {
-                    middleRightCell = 'X';
-                }
-                if(cell === 'bottom left') {
-                    bottomLeftCell = 'X';
-                }
-                if(cell === 'bottom center') {
-                    bottomCenterCell = 'X';
-                }
-                if(cell === 'bottom right') {
-                    bottomRightCell = 'X';
-                }
-                
-                currentPlayer = 'O';
-            } 
-            else if (currentPlayer === 'O') {
-                drawOtoTheCell(cell);
-                if(cell === 'top left') {
-                    topLeftCell = 'O';
-                }
-                if(cell === 'top center') {
-                    topCenterCell = 'O';
-                }
-                if(cell === 'top right') {
-                    topRightCell = 'O';
-                }
-                if(cell === 'middle left') {
-                    middleLeftCell = 'O';
-                }
-                if(cell === 'middle center') {
-                    middleCenterCell = 'O';
-                }
-                if(cell === 'middle right') {
-                    middleRightCell = 'O';
-                }
-                if(cell === 'bottom left') {
-                    bottomLeftCell = 'O';
-                }
-                if(cell === 'bottom center') {
-                    bottomCenterCell = 'O';
-                }
-                if(cell === 'bottom right') {
-                    bottomRightCell = 'O';
-                }
-                currentPlayer = 'X';
             }
-
-            setTimeout(checkIfGameHasAWinner, 500);
-                
-        }
-
-        function checkIfGameHasAWinner() {
-            // check top row:
-            if(topLeftCell === 'X' && topCenterCell === 'X' && topRightCell === 'X') {
-                alert('X wins');
-                resetGame();
-            }
-            if(topLeftCell === 'O' && topCenterCell === 'O' && topRightCell === 'O') {
-                alert('O wins');
-                resetGame();
-            }
-            // check middle row:
-            if(middleLeftCell === 'X' && middleCenterCell === 'X' && middleRightCell === 'X') {
-                alert('X wins');
-                resetGame();
-            }
-            if(middleLeftCell === 'O' && middleCenterCell === 'O' && middleRightCell === 'O') {
-                alert('O wins');
-                resetGame();
-            }
-            // check bottom row:
-            if(bottomLeftCell === 'X' && bottomCenterCell === 'X' && bottomRightCell === 'X') {
-                alert('X wins');
-                resetGame();
-            }
-            if(bottomLeftCell === 'O' && bottomCenterCell === 'O' && bottomRightCell === 'O') {
-                alert('O wins');
-                resetGame();
-            }
-            // check diagonal:
-            if(topLeftCell === 'X' && middleCenterCell === 'X' && bottomRightCell === 'X') {
-                alert('X wins');
-                resetGame();
-            }
-            if(topLeftCell === 'O' && middleCenterCell === 'O' && bottomRightCell === 'O') {
-                alert('O wins');
-                resetGame();
-            }
-            // check reverse diagonal: 
-            if(topRightCell === 'X' && middleCenterCell === 'X' && bottomLeftCell === 'X') {
-                alert('X wins');
-                resetGame();
-            }
-            if(topRightCell === 'O' && middleCenterCell === 'O' && bottomLeftCell === 'O') {
-                alert('O wins');
-                resetGame();
-            }
-            // check columns:
-            if(topLeftCell === 'X' && middleLeftCell === 'X' && bottomLeftCell === 'X') {
-                alert('X wins');
-                resetGame();
-            }
-            if(topLeftCell === 'O' && middleLeftCell === 'O' && bottomLeftCell === 'O') {
-                alert('O wins');
-                resetGame();
-            }
-            if(topCenterCell === 'X' && middleCenterCell === 'X' && bottomCenterCell === 'X') {
-                alert('X wins');
-                resetGame();
-            }
-            if(topCenterCell === 'O' && middleCenterCell === 'O' && bottomCenterCell === 'O') {
-                alert('O wins');
-                resetGame();
-            }
-            if(topRightCell === 'X' && middleRightCell === 'X' && bottomRightCell === 'X') {
-                alert('X wins');
-                resetGame();
-            }
-            if(topRightCell === 'O' && middleRightCell === 'O' && bottomRightCell === 'O') {
-                alert('O wins');
-                resetGame();
-            }
-            // check if the game is a draw:
-            if(topLeftCell !== 'Empty' && topCenterCell !== 'Empty' && topRightCell !== 'Empty' && middleLeftCell !== 'Empty' && middleCenterCell !== 'Empty' && middleRightCell !== 'Empty' && bottomLeftCell !== 'Empty' && bottomCenterCell !== 'Empty' && bottomRightCell !== 'Empty') {
-                alert('Draw');
-                resetGame();
+            
+            if (bottomRow >= 0) {
+                // Start the animation first, don't update the board yet
+                animatePieceFromTopToBottom(col, 0, bottomRow, player);
             }
         }
 
+        function animatePieceFromTopToBottom(col, startRow, bottomRow, player) {
+            // draw a circle on the cell, and then animate it to the bottommost empty cell  
+            const animationDuration = 500; // Reduced animation time for better feel
+            const animationStartTime = Date.now();
+            
+            const animationInterval = setInterval(() => {
+                const progress = (Date.now() - animationStartTime) / animationDuration;
+                
+                if (progress >= 1) {
+                    // Animation complete - only now update the board
+                    board[bottomRow][col] = player;
+                    totalMoves++; // Increment total moves
+                    clearInterval(animationInterval);
+                    redrawBoard();
+                    
+                    // Check for winner after piece placement is complete
+                    if (checkWinner(bottomRow, col)) {
+                        gameOver = true;
+                        winner = player;
+                        displayWinner();
+                    } 
+                    // Check for draw if no winner and board is full
+                    else if (totalMoves === rows * cols) {
+                        gameOver = true;
+                        displayDraw();
+                    }
+                    else {
+                        // Only change player if game isn't over
+                        currentPlayer = currentPlayer === players[0] ? players[1] : players[0];
+                    }
+                    return;
+                }
+                
+                // Calculate the current position
+                const currentRow = Math.min(bottomRow, startRow + (bottomRow - startRow) * progress);
+                
+                // Redraw the board to clear previous frame
+                redrawBoard();
+                
+                // Draw the piece at its current position without affecting the board array
+                drawPiece(col, currentRow, player);
+                
+            }, 16); // ~60fps
+        }
+        
+        function drawPiece(col, row, player) {
+            ctx.beginPath();
+            ctx.arc(col * cellWidth + cellWidth / 2, row * cellHeight + cellHeight / 2, cellWidth / 3, 0, 2 * Math.PI);
+            ctx.fillStyle = player;
+            ctx.fill();
+        }
+        
+        function redrawBoard() {
+            // Clear the entire canvas
+            ctx.fillStyle = 'green';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Redraw the grid
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 5;
+            
+            // Draw the grid
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    ctx.beginPath();
+                    ctx.rect(j * cellWidth, i * cellHeight, cellWidth, cellHeight);
+                    ctx.stroke();
+                    
+                    // Draw any existing pieces
+                    if (board[i][j] !== '') {
+                        drawPiece(j, i, board[i][j]);
+                    }
+                }
+            }
+        }
+        
+        function checkWinner(row, col) {
+            const player = board[row][col];
+            const winningCount = 4; // Number needed to win
+            
+            // Check horizontally
+            // We need to check at most `cols - winningCount + 1` starting positions
+            for (let c = Math.max(0, col - winningCount + 1); c <= Math.min(col, cols - winningCount); c++) {
+                let consecutive = 0;
+                let winningCells = [];
+                
+                for (let i = 0; i < winningCount; i++) {
+                    if (c + i < cols && board[row][c + i] === player) {
+                        consecutive++;
+                        winningCells.push([row, c + i]);
+                    } else {
+                        break;
+                    }
+                }
+                
+                if (consecutive === winningCount) {
+                    highlightWinningCells(winningCells);
+                    return true;
+                }
+            }
+            
+            // Check vertically
+            for (let r = Math.max(0, row - winningCount + 1); r <= Math.min(row, rows - winningCount); r++) {
+                let consecutive = 0;
+                let winningCells = [];
+                
+                for (let i = 0; i < winningCount; i++) {
+                    if (r + i < rows && board[r + i][col] === player) {
+                        consecutive++;
+                        winningCells.push([r + i, col]);
+                    } else {
+                        break;
+                    }
+                }
+                
+                if (consecutive === winningCount) {
+                    highlightWinningCells(winningCells);
+                    return true;
+                }
+            }
+            
+            // Check diagonal (top-left to bottom-right)
+            for (let r = Math.max(0, row - winningCount + 1); r <= Math.min(row, rows - winningCount); r++) {
+                for (let c = Math.max(0, col - winningCount + 1); c <= Math.min(col, cols - winningCount); c++) {
+                    let consecutive = 0;
+                    let winningCells = [];
+                    
+                    for (let i = 0; i < winningCount; i++) {
+                        if (r + i < rows && c + i < cols && board[r + i][c + i] === player) {
+                            consecutive++;
+                            winningCells.push([r + i, c + i]);
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    if (consecutive === winningCount) {
+                        highlightWinningCells(winningCells);
+                        return true;
+                    }
+                }
+            }
+            
+            // Check diagonal (top-right to bottom-left)
+            for (let r = Math.max(0, row - winningCount + 1); r <= Math.min(row, rows - winningCount); r++) {
+                for (let c = Math.min(cols - 1, col + winningCount - 1); c >= winningCount - 1; c--) {
+                    let consecutive = 0;
+                    let winningCells = [];
+                    
+                    for (let i = 0; i < winningCount; i++) {
+                        if (r + i < rows && c - i >= 0 && board[r + i][c - i] === player) {
+                            consecutive++;
+                            winningCells.push([r + i, c - i]);
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    if (consecutive === winningCount) {
+                        highlightWinningCells(winningCells);
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        function highlightWinningCells(cells) {
+            // Draw a highlight around the winning cells
+            for (const [row, col] of cells) {
+                ctx.beginPath();
+                ctx.rect(col * cellWidth, row * cellHeight, cellWidth, cellHeight);
+                ctx.strokeStyle = 'yellow';
+                ctx.lineWidth = 8;
+                ctx.stroke();
+                
+                // Reset to default style for other drawings
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 5;
+            }
+        }
+        
+        function displayWinner() {
+            // Display a message announcing the winner
+            const winnerColor = winner.charAt(0).toUpperCase() + winner.slice(1);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, canvas.height/2 - 50, canvas.width, 100);
+            
+            ctx.font = 'bold 36px Arial';
+            ctx.fillStyle = winner;
+            ctx.textAlign = 'center';
+            ctx.fillText(`${winnerColor} Wins!`, canvas.width/2, canvas.height/2 + 10);
+            
+            addReplayButton();
+        }
+        
+        function displayDraw() {
+            // Display a message announcing the draw
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, canvas.height/2 - 50, canvas.width, 100);
+            
+            ctx.font = 'bold 36px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText('Game Draw!', canvas.width/2, canvas.height/2 + 10);
+            
+            addReplayButton();
+        }
+        
+        function addReplayButton() {
+            // Add replay button
+            const replayButton = document.createElement('button');
+            replayButton.textContent = 'Play Again';
+            replayButton.style.padding = '10px 20px';
+            replayButton.style.fontSize = '18px';
+            replayButton.style.margin = '20px';
+            replayButton.style.cursor = 'pointer';
+            replayButton.style.backgroundColor = '#4CAF50';
+            replayButton.style.color = 'white';
+            replayButton.style.border = 'none';
+            replayButton.style.borderRadius = '5px';
+            
+            replayButton.onclick = resetGame;
+            
+            // Add button below the canvas
+            gameContainer.insertAdjacentElement('afterend', replayButton);
+        }
+        
         function resetGame() {
-            window.location.reload();
+            // Hide game and show setup form
+            gameContainer.style.display = 'none';
+            setupContainer.style.display = 'flex';
+            
+            // Remove any replay buttons
+            const replayButtons = document.querySelectorAll('button:not(#start-game)');
+            replayButtons.forEach(button => button.remove());
         }
-
-        function getCenterOfTheCell(cell) {
-            if (cell === 'top left') {
-                return {x: 100, y: 100};
-            }
-            if (cell === 'top center') {
-                return {x: 300, y: 100};
-            }
-            if (cell === 'top right') {
-                return {x: 500, y: 100};
-            }   
-            if (cell === 'middle left') {
-                return {x: 100, y: 300};
-            }
-            if (cell === 'middle center') {
-                return {x: 300, y: 300};
-            }
-            if (cell === 'middle right') {
-                return {x: 500, y: 300};
-            }
-            if (cell === 'bottom left') {
-                return {x: 100, y: 500};
-            }
-            if (cell === 'bottom center') {
-                return {x: 300, y: 500};
-            }
-            if (cell === 'bottom right') {
-                return {x: 500, y: 500};
-            }
-        }
-
-        
-        function drawXtoTheCell(cell) {
-            const center = getCenterOfTheCell(cell);
-            ctx.beginPath();
-            ctx.moveTo(center.x - 50, center.y - 50);
-            ctx.lineTo(center.x + 50, center.y + 50);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(center.x + 50, center.y - 50);
-            ctx.lineTo(center.x - 50, center.y + 50);
-            ctx.stroke();
-        }
-
-        function drawOtoTheCell(cell) {
-            const center = getCenterOfTheCell(cell);
-            ctx.beginPath();
-            ctx.arc(center.x, center.y, 50, 0, 2 * Math.PI);
-            ctx.stroke();
-        }
-
-
-        function whichCellUserClicked(x, y) {
-            console.log(x, y);
-            // if x is between 0 and 200 and y is between 0 and 200, then draw an X to top left cell.
-            if (x > 0 && x < 200 && y > 0 && y < 200) {
-                return 'top left';
-            }
-            // if x is between 200 and 400 and y is between 0 and 200, then draw an X to top middle cell.
-            if (x > 200 && x < 400 && y > 0 && y < 200) {
-                return 'top center';
-            }
-            // if x is between 400 and 600 and y is between 0 and 200, then draw an X to top right cell.
-            if (x > 400 && x < 600 && y > 0 && y < 200) {
-                return 'top right';
-            }
-
-            // if x is between 0 and 200 and y is between 200 and 400, then draw an X to middle left cell.
-            if (x > 0 && x < 200 && y > 200 && y < 400) {
-                return 'middle left';
-            }
-
-            // if x is between 200 and 400 and y is between 200 and 400, then draw an X to middle middle cell.
-            if (x > 200 && x < 400 && y > 200 && y < 400) {
-                return 'middle center';
-            }
-
-            // if x is between 400 and 600 and y is between 200 and 400, then draw an X to middle right cell.
-            if (x > 400 && x < 600 && y > 200 && y < 400) {
-                return 'middle right';
-            }
-
-            // if x is between 0 and 200 and y is between 400 and 600, then draw an X to bottom left cell.
-            if (x > 0 && x < 200 && y > 400 && y < 600) {
-                return 'bottom left';
-            }
-
-            // if x is between 200 and 400 and y is between 400 and 600, then draw an X to bottom middle cell.
-            if (x > 200 && x < 400 && y > 400 && y < 600) {
-                return 'bottom center';
-            }
-
-            // if x is between 400 and 600 and y is between 400 and 600, then draw an X to bottom right cell.   
-            if (x > 400 && x < 600 && y > 400 && y < 600) {
-                return 'bottom right'; 
-            }
-        }
-
-        // add the event listener to the canvas
-        canvas.addEventListener('click', handleClick);
-
-        // whenever a player clicks on a cell, it will be filled with the player's mark
-        // the game will then switch to the other player
-        // the game will continue until one player wins or the game is a draw
-        // the game will then reset
-        
-        
     </script>
 </html>
